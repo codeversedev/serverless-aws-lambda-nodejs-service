@@ -1,0 +1,92 @@
+service: serverless-aws-lambda-nodejs-service
+
+frameworkVersion: "3"
+
+provider:
+  name: aws
+  runtime: nodejs20.x
+  stage: ${opt:stage, 'dev'}
+  region: ${opt:region, 'us-east-1'}
+  memorySize: 256
+  timeout: 10
+  environment:
+    ITEMS_TABLE: ${self:service}-items-${self:provider.stage}
+  iam:
+    role:
+      statements:
+        - Effect: Allow
+          Action:
+            - dynamodb:Query
+            - dynamodb:Scan
+            - dynamodb:GetItem
+            - dynamodb:PutItem
+            - dynamodb:UpdateItem
+            - dynamodb:DeleteItem
+          Resource:
+            - !GetAtt ItemsTable.Arn
+
+functions:
+  createItem:
+    handler: src/handlers/createItem.handler
+    events:
+      - http:
+          path: /items
+          method: post
+          cors: true
+
+  getItem:
+    handler: src/handlers/getItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: get
+          cors: true
+
+  listItems:
+    handler: src/handlers/listItems.handler
+    events:
+      - http:
+          path: /items
+          method: get
+          cors: true
+
+  updateItem:
+    handler: src/handlers/updateItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: put
+          cors: true
+
+  searchItems:
+    handler: src/handlers/searchItems.handler
+    events:
+      - http:
+          path: /items/search
+          method: get
+          cors: true
+
+  deleteItem:
+    handler: src/handlers/deleteItem.handler
+    events:
+      - http:
+          path: /items/{id}
+          method: delete
+          cors: true
+
+resources:
+  Resources:
+    ItemsTable:
+      Type: AWS::DynamoDB::Table
+      Properties:
+        TableName: ${self:provider.environment.ITEMS_TABLE}
+        BillingMode: PAY_PER_REQUEST
+        AttributeDefinitions:
+          - AttributeName: id
+            AttributeType: S
+        KeySchema:
+          - AttributeName: id
+            KeyType: HASH
+
+plugins:
+  - serverless-offline
