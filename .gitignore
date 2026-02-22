@@ -1,1 +1,29 @@
+<<<<<<< HEAD
 node_modules
+=======
+# Dependencies
+node_modules/
+
+# Serverless
+.serverless/
+
+# Environment
+.env
+.env.*
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Coverage
+coverage/
+
+# Build
+dist/
+>>>>>>> fcc213876a572c42c9a44d32aeef82b6a77ca60d
