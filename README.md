@@ -60,12 +60,6 @@ npm run deploy
 npm run deploy:prod
 ```
 
-### Remove the stack
-
-```bash
-npm run remove
-```
-
 ## Usage Examples
 
 ### Create an item
