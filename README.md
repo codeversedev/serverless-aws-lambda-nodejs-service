@@ -1,20 +1,32 @@
  # Serverless AWS Lambda Node.js Service
 
-A RESTful CRUD API built with the [Serverless Framework](https://www.serverless.com/), AWS Lambda, and Amazon DynamoDB.
+A RESTful CRUD API built with the [Serverless Framework](https://www.serverless.com/), AWS Lambda, and Amazon DynamoDB using **single table design**.
 
 ## Architecture
 
 ```
-API Gateway → Lambda Functions → DynamoDB
+API Gateway → Lambda Functions → DynamoDB (Single Table)
 ```
 
-| Method   | Endpoint       | Description        |
-| -------- | -------------- | ------------------ |
-| `POST`   | `/items`       | Create a new item  |
-| `GET`    | `/items`       | List all items     |
-| `GET`    | `/items/{id}`  | Get item by ID     |
-| `PUT`    | `/items/{id}`  | Update an item     |
-| `DELETE` | `/items/{id}`  | Delete an item     |
+### DynamoDB Key Design
+
+The table uses a composite primary key with prefixed values:
+
+| Key | Format | Example |
+| --- | ------ | ------- |
+| `pk` (Partition Key) | `category#<category>` | `category#electronics` |
+| `sk` (Sort Key) | `item#id#<uuid>` | `item#id#a1b2c3d4-5678-90ab-cdef-1234567890ab` |
+
+### API Endpoints
+
+| Method   | Endpoint                    | Description                        |
+| -------- | --------------------------- | ---------------------------------- |
+| `POST`   | `/items`                    | Create a new item                  |
+| `GET`    | `/items/{category}`         | List all items in a category       |
+| `GET`    | `/items/{category}/{id}`    | Get a specific item                |
+| `PUT`    | `/items/{category}/{id}`    | Update an item                     |
+| `DELETE` | `/items/{category}/{id}`    | Delete an item                     |
+| `GET`    | `/items/search?name=&category=` | Search items by name           |
 
 ## Prerequisites
 
@@ -61,25 +73,25 @@ npm run remove
 ```bash
 curl -X POST http://localhost:3000/dev/items \
   -H "Content-Type: application/json" \
-  -d '{"name": "My Item", "description": "A sample item"}'
+  -d '{"name": "Wireless Mouse", "category": "electronics", "description": "Bluetooth mouse"}'
 ```
 
-### List all items
+### List items by category
 
 ```bash
-curl http://localhost:3000/dev/items
+curl http://localhost:3000/dev/items/electronics
 ```
 
 ### Get a single item
 
 ```bash
-curl http://localhost:3000/dev/items/{id}
+curl http://localhost:3000/dev/items/electronics/{id}
 ```
 
 ### Update an item
 
 ```bash
-curl -X PUT http://localhost:3000/dev/items/{id} \
+curl -X PUT http://localhost:3000/dev/items/electronics/{id} \
   -H "Content-Type: application/json" \
   -d '{"name": "Updated Name", "description": "Updated description"}'
 ```
@@ -87,7 +99,17 @@ curl -X PUT http://localhost:3000/dev/items/{id} \
 ### Delete an item
 
 ```bash
-curl -X DELETE http://localhost:3000/dev/items/{id}
+curl -X DELETE http://localhost:3000/dev/items/electronics/{id}
+```
+
+### Search items by name
+
+```bash
+# Search across all categories
+curl "http://localhost:3000/dev/items/search?name=Mouse"
+
+# Search within a specific category (more efficient)
+curl "http://localhost:3000/dev/items/search?name=Mouse&category=electronics"
 ```
 
 ## Project Structure
@@ -98,12 +120,13 @@ curl -X DELETE http://localhost:3000/dev/items/{id}
 ├── src/
 │   ├── handlers/
 │   │   ├── createItem.js   # POST   /items
-│   │   ├── getItem.js      # GET    /items/{id}
-│   │   ├── listItems.js    # GET    /items
-│   │   ├── updateItem.js   # PUT    /items/{id}
-│   │   └── deleteItem.js   # DELETE /items/{id}
+│   │   ├── getItem.js      # GET    /items/{category}/{id}
+│   │   ├── listItems.js    # GET    /items/{category}
+│   │   ├── searchItems.js  # GET    /items/search
+│   │   ├── updateItem.js   # PUT    /items/{category}/{id}
+│   │   └── deleteItem.js   # DELETE /items/{category}/{id}
 │   └── lib/
-│       ├── dynamodb.js     # DynamoDB client singleton
+│       ├── dynamodb.js     # DynamoDB client & single table key helpers
 │       └── response.js     # HTTP response helper
 └── tests/
     └── lib/
