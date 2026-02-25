@@ -1,6 +1,6 @@
 const { PutCommand } = require("@aws-sdk/lib-dynamodb");
 const { v4: uuidv4 } = require("uuid");
-const { dynamoDb, TABLE_NAME } = require("../lib/dynamodb");
+const { dynamoDb, TABLE_NAME, buildItemKey } = require("../lib/dynamodb");
 const { response } = require("../lib/response");
 
 /**
@@ -15,9 +15,16 @@ module.exports.handler = async (event) => {
       return response(400, { error: '"name" is required' });
     }
 
+    if (!data.category) {
+      return response(400, { error: '"category" is required' });
+    }
+
+    const id = uuidv4();
     const timestamp = new Date().toISOString();
     const item = {
-      id: uuidv4(),
+      ...buildItemKey(data.category, id),
+      id,
+      category: data.category,
       name: data.name,
       description: data.description || "",
       createdAt: timestamp,

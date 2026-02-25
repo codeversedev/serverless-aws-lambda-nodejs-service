@@ -1,14 +1,14 @@
 const { UpdateCommand } = require("@aws-sdk/lib-dynamodb");
-const { dynamoDb, TABLE_NAME } = require("../lib/dynamodb");
+const { dynamoDb, TABLE_NAME, buildItemKey } = require("../lib/dynamodb");
 const { response } = require("../lib/response");
 
 /**
- * PUT /items/{id}
+ * PUT /items/{category}/{id}
  * Updates an existing item in DynamoDB.
  */
 module.exports.handler = async (event) => {
   try {
-    const { id } = event.pathParameters;
+    const { category, id } = event.pathParameters;
     const data = JSON.parse(event.body);
 
     if (!data.name && !data.description) {
@@ -40,12 +40,12 @@ module.exports.handler = async (event) => {
     const result = await dynamoDb.send(
       new UpdateCommand({
         TableName: TABLE_NAME,
-        Key: { id },
+        Key: buildItemKey(category, id),
         UpdateExpression: `SET ${expressionParts.join(", ")}`,
         ExpressionAttributeValues: expressionValues,
         ExpressionAttributeNames: expressionNames,
         ReturnValues: "ALL_NEW",
-        ConditionExpression: "attribute_exists(id)",
+        ConditionExpression: "attribute_exists(pk)",
       })
     );
 

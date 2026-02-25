@@ -1,4 +1,4 @@
-# Serverless AWS Lambda Node.js Service
+ # Serverless AWS Lambda Node.js Service
 
 A RESTful CRUD API built with the [Serverless Framework](https://www.serverless.com/), AWS Lambda, and Amazon DynamoDB.
 

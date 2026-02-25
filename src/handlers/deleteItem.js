@@ -1,20 +1,20 @@
 const { DeleteCommand } = require("@aws-sdk/lib-dynamodb");
-const { dynamoDb, TABLE_NAME } = require("../lib/dynamodb");
+const { dynamoDb, TABLE_NAME, buildItemKey } = require("../lib/dynamodb");
 const { response } = require("../lib/response");
 
 /**
- * DELETE /items/{id}
- * Deletes an item from DynamoDB by id.
+ * DELETE /items/{category}/{id}
+ * Deletes an item from DynamoDB by category and id.
  */
 module.exports.handler = async (event) => {
   try {
-    const { id } = event.pathParameters;
+    const { category, id } = event.pathParameters;
 
     await dynamoDb.send(
       new DeleteCommand({
         TableName: TABLE_NAME,
-        Key: { id },
-        ConditionExpression: "attribute_exists(id)",
+        Key: buildItemKey(category, id),
+        ConditionExpression: "attribute_exists(pk)",
       })
     );
 

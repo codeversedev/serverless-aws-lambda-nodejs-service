@@ -38,7 +38,7 @@ functions:
     handler: src/handlers/getItem.handler
     events:
       - http:
-          path: /items/{id}
+          path: /items/{category}/{id}
           method: get
           cors: true
 
@@ -46,7 +46,7 @@ functions:
     handler: src/handlers/listItems.handler
     events:
       - http:
-          path: /items
+          path: /items/{category}
           method: get
           cors: true
 
@@ -54,7 +54,7 @@ functions:
     handler: src/handlers/updateItem.handler
     events:
       - http:
-          path: /items/{id}
+          path: /items/{category}/{id}
           method: put
           cors: true
 
@@ -70,7 +70,7 @@ functions:
     handler: src/handlers/deleteItem.handler
     events:
       - http:
-          path: /items/{id}
+          path: /items/{category}/{id}
           method: delete
           cors: true
 
@@ -82,11 +82,15 @@ resources:
         TableName: ${self:provider.environment.ITEMS_TABLE}
         BillingMode: PAY_PER_REQUEST
         AttributeDefinitions:
-          - AttributeName: id
+          - AttributeName: pk
+            AttributeType: S
+          - AttributeName: sk
             AttributeType: S
         KeySchema:
-          - AttributeName: id
+          - AttributeName: pk
             KeyType: HASH
+          - AttributeName: sk
+            KeyType: RANGE
 
 plugins:
   - serverless-offline

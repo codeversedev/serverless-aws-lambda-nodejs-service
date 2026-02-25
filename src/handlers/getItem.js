@@ -1,19 +1,19 @@
 const { GetCommand } = require("@aws-sdk/lib-dynamodb");
-const { dynamoDb, TABLE_NAME } = require("../lib/dynamodb");
+const { dynamoDb, TABLE_NAME, buildItemKey } = require("../lib/dynamodb");
 const { response } = require("../lib/response");
 
 /**
- * GET /items/{id}
- * Retrieves a single item by id from DynamoDB.
+ * GET /items/{category}/{id}
+ * Retrieves a single item by category and id from DynamoDB.
  */
 module.exports.handler = async (event) => {
   try {
-    const { id } = event.pathParameters;
+    const { category, id } = event.pathParameters;
 
     const result = await dynamoDb.send(
       new GetCommand({
         TableName: TABLE_NAME,
-        Key: { id },
+        Key: buildItemKey(category, id),
       })
     );
 

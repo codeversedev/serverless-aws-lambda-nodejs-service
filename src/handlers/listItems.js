@@ -1,16 +1,20 @@
-const { ScanCommand } = require("@aws-sdk/lib-dynamodb");
-const { dynamoDb, TABLE_NAME } = require("../lib/dynamodb");
+const { QueryCommand } = require("@aws-sdk/lib-dynamodb");
+const { dynamoDb, TABLE_NAME, buildPk } = require("../lib/dynamodb");
 const { response } = require("../lib/response");
 
 /**
- * GET /items
- * Lists all items from DynamoDB.
+ * GET /items/{category}
+ * Lists all items in a category from DynamoDB.
  */
-module.exports.handler = async () => {
+module.exports.handler = async (event) => {
   try {
+    const { category } = event.pathParameters;
+
     const result = await dynamoDb.send(
-      new ScanCommand({
+      new QueryCommand({
         TableName: TABLE_NAME,
+        KeyConditionExpression: "pk = :category",
+        ExpressionAttributeValues: { ":category": buildPk(category) },
       })
     );
 
